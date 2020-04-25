@@ -2,8 +2,7 @@ package ru.skillbranch.devintensive
 
 import org.junit.Test
 
-import org.junit.Assert.*
-import ru.skillbranch.devintensive.extensions.TimeUnit
+import ru.skillbranch.devintensive.extensions.TimeUnits
 import ru.skillbranch.devintensive.extensions.add
 import ru.skillbranch.devintensive.extensions.format
 import ru.skillbranch.devintensive.extensions.toUserView
@@ -57,8 +56,8 @@ class ExampleUnitTest {
     fun testExtensions() {
         val user = User.makeUser("John Cena")
         val user2 = user.copy(lastVisit = Date())
-        val user3 = user.copy(lastVisit = Date().add(-2, TimeUnit.SECOND))
-        val user4 = user.copy(lastName = "Wick", lastVisit = Date().add(2, TimeUnit.HOUR))
+        val user3 = user.copy(lastVisit = Date().add(-2, TimeUnits.SECOND))
+        val user4 = user.copy(lastName = "Wick", lastVisit = Date().add(2, TimeUnits.HOUR))
 
         println(
             """

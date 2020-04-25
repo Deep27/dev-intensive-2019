@@ -1,6 +1,5 @@
 package ru.skillbranch.devintensive.extensions
 
-import java.lang.IllegalArgumentException
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -14,13 +13,12 @@ fun Date.format(pattern: String = "HH:mm:ss dd.MM.yy"): String {
     return dateFormat.format(this)
 }
 
-fun Date.add(value: Int, unit: TimeUnit = TimeUnit.SECOND): Date {
+fun Date.add(value: Int, unit: TimeUnits = TimeUnits.SECOND): Date {
     this.time += when (unit) {
-        TimeUnit.SECOND -> value * SECOND
-        TimeUnit.MINUTE -> value * MINUTE
-        TimeUnit.HOUR -> value * HOUR
-        TimeUnit.DAY -> value * DAY
-        else -> throw IllegalArgumentException("Invalid unit!")
+        TimeUnits.SECOND -> value * SECOND
+        TimeUnits.MINUTE -> value * MINUTE
+        TimeUnits.HOUR -> value * HOUR
+        TimeUnits.DAY -> value * DAY
     }
     return this
 }
@@ -31,6 +29,6 @@ fun Date.humanizeDiff(date: Date = Date()): String {
     return "TODO"
 }
 
-enum class TimeUnit {
+enum class TimeUnits {
     SECOND, MINUTE, HOUR, DAY
 }
