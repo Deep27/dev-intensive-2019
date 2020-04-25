@@ -83,11 +83,11 @@ class ExampleUnitTest {
         val user = User.makeUser("John Cena")
         val textMessage = BaseMessage.makeMessage(
             user, Chat("0"),
-            payload = "any text message", type = MessageType.TEXT
+            payload = "any text message", type = "text"
         )
-        val imageMessage = BaseMessage.AbstractFactory.makeMessage(
+        val imageMessage = BaseMessage.makeMessage(
             user, Chat("0"),
-            payload = "any image url", type = MessageType.IMAGE
+            payload = "any image url", type = "image"
         )
 
         when (textMessage) {

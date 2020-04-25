@@ -12,11 +12,11 @@ abstract class BaseMessage(
         private var lastId: Int = -1
         fun makeMessage(
             from: User?, chat: Chat, date: Date = Date(),
-            type: MessageType = MessageType.TEXT, payload: Any?
+            type: String = "text", payload: Any?
         ): BaseMessage {
             lastId++
             return when (type) {
-                MessageType.IMAGE -> ImageMessage(
+                "image" -> ImageMessage(
                     "$lastId", from, chat,
                     date = date, image = payload as String
                 )
@@ -27,8 +27,4 @@ abstract class BaseMessage(
             }
         }
     }
-}
-
-enum class MessageType {
-    TEXT, IMAGE
 }
