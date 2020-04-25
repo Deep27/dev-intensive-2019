@@ -9,7 +9,11 @@ object Utils {
         return firstName to lastName
     }
 
-    fun transliteration(fullName: String?): String {
+    fun transliteration(payload: String, divider: String = " "): String {
+        return "TODO"
+    }
+
+    fun toInitials(firstName: String?, lastName: String?): String {
         return "TODO"
     }
 }

@@ -6,7 +6,8 @@ import org.junit.Assert.*
 import ru.skillbranch.devintensive.extensions.TimeUnit
 import ru.skillbranch.devintensive.extensions.add
 import ru.skillbranch.devintensive.extensions.format
-import ru.skillbranch.devintensive.models.User
+import ru.skillbranch.devintensive.extensions.toUserView
+import ru.skillbranch.devintensive.models.*
 import java.util.*
 
 class ExampleUnitTest {
@@ -67,6 +68,35 @@ class ExampleUnitTest {
             ${user4.lastVisit?.format()}
         """.trimIndent()
         )
+    }
+
+    @Test
+    fun testDataMapping() {
+        val user = User.makeUser("John Cena")
+        println(user)
+        val userView = user.toUserView()
+        userView.printMe()
+    }
+
+    @Test
+    fun testMessageFactory() {
+        val user = User.makeUser("John Cena")
+        val textMessage = BaseMessage.makeMessage(
+            user, Chat("0"),
+            payload = "any text message", type = MessageType.TEXT
+        )
+        val imageMessage = BaseMessage.AbstractFactory.makeMessage(
+            user, Chat("0"),
+            payload = "any image url", type = MessageType.IMAGE
+        )
+
+        when (textMessage) {
+            is TextMessage -> println("Text message")
+            is ImageMessage -> println("Text message")
+        }
+
+        println(textMessage.formatMessage())
+        println(imageMessage.formatMessage())
     }
 }
 
