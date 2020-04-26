@@ -22,7 +22,6 @@ fun String.truncate(to: Int = 16): String {
     return "$truncated..."
 }
 
-fun String.stripHtml(): String {
-    var stripped = this.replace("\\s+".toRegex(), " ")
-    return stripped
-}
+fun String.stripHtml() = this.replace("\\s+".toRegex(), " ")
+    .replace("<.*?>".toRegex(), "")
+    .replace("&[a-zA-Z0-9]+;".toRegex(), "")
