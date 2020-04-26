@@ -122,7 +122,7 @@ class ExampleUnitTest {
     fun testUserBuilder() {
         val user = User.makeUser("John Cena")
         val user2 = User.Builder()
-            .id("0")
+            .id(user.id)
             .firstName("John")
             .lastName("Cena")
             .build()
@@ -134,6 +134,16 @@ class ExampleUnitTest {
         assertEquals("Bender Bending R...", "Bender Bending Rodriguez — дословно «Сгибальщик Сгибающий Родригес»".truncate())
         assertEquals("Bender Bending...", "Bender Bending Rodriguez — дословно «Сгибальщик Сгибающий Родригес»".truncate(15))
         assertEquals("A", "A     ".truncate(3))
+    }
+
+    @Test
+    fun testStripHtml() {
+//        Реализуй extension позволяющий очистить
+//        строку от html тегов и html escape
+//        последовательностей ("& < > ' ""), а так же удалить
+//        пустые символы (пробелы) между словами если их больше 1.
+        assertEquals("Образовательное IT-сообщество Skill Branch", "<p class=\"title\">Образовательное IT-сообщество Skill Branch</p>".stripHtml())
+        assertEquals("Образовательное IT-сообщество Skill Branch", "<p>Образовательное       IT-сообщество Skill Branch</p>".stripHtml())
     }
 
     @Test

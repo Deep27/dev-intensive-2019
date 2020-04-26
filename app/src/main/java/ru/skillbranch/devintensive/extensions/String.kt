@@ -21,3 +21,8 @@ fun String.truncate(to: Int = 16): String {
     truncated = truncated.substring(0, to).trim()
     return "$truncated..."
 }
+
+fun String.stripHtml(): String {
+    var stripped = this.replace("\\s+".toRegex(), " ")
+    return stripped
+}
