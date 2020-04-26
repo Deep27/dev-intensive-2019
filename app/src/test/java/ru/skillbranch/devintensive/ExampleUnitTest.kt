@@ -74,6 +74,8 @@ class ExampleUnitTest {
         assertEquals(null, Utils.toInitials(null, null))
         assertEquals(null, Utils.toInitials(" ", " "))
         assertEquals(null, Utils.toInitials("", ""))
+        assertEquals("R", Utils.toInitials("", "roman"))
+        assertEquals("R", Utils.toInitials(null, "roman"))
     }
 
     @Test

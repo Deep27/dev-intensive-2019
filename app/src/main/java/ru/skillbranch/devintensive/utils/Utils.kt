@@ -31,8 +31,11 @@ object Utils {
     fun toInitials(firstName: String?, lastName: String?): String? {
         val firstChar = firstName?.extractFirstUpperChar()
         val secondChar = lastName?.extractFirstUpperChar()
-        if (firstChar == null) {
+        if (firstChar == null && secondChar == null)  {
             return null
+        }
+        if (firstChar == null) {
+            return secondChar
         }
         if (secondChar == null) {
             return firstChar
@@ -41,7 +44,7 @@ object Utils {
     }
 
     private fun transliterate(cyr: String): String {
-        var lat = cyr.replace("а".toRegex(), "a")
+        var lat = cyr.transliterateSingleChar("а", "а")
         lat = lat.transliterateSingleChar("б", "b")
         lat = lat.transliterateSingleChar("в", "v")
         lat = lat.transliterateSingleChar("г", "g")
