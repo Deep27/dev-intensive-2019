@@ -6,6 +6,7 @@ import java.lang.StringBuilder
 import java.util.*
 
 object Utils {
+
     fun parseFullName(fullName: String?): Pair<String?, String?> {
         val parts: List<String>? = fullName?.trim()?.split(" ")
         var firstName = parts?.getOrNull(0)
@@ -17,21 +18,10 @@ object Utils {
         return firstName to lastName
     }
 
-    fun transliteration(payload: String, divider: String = " "): String {
-        var transliteratedParts = transliterate(payload.toLowerCase(Locale.ROOT)).split(" ")
-        transliteratedParts =
-            transliteratedParts.map { p -> p[0].toUpperCase() + p.substring(1, p.length) }
-        val result = StringBuilder()
-        transliteratedParts.forEach {
-            p -> result.append(p).append(divider)
-        }
-        return result.deleteCharAt(result.length - 1).toString()
-    }
-
     fun toInitials(firstName: String?, lastName: String?): String? {
         val firstChar = firstName?.extractFirstUpperChar()
         val secondChar = lastName?.extractFirstUpperChar()
-        if (firstChar == null && secondChar == null)  {
+        if (firstChar == null && secondChar == null) {
             return null
         }
         if (firstChar == null) {
@@ -41,6 +31,26 @@ object Utils {
             return firstChar
         }
         return firstChar + secondChar
+    }
+
+    fun transliteration(payload: String, divider: String = " "): String {
+        val transliteratedParts = payload.split(" ").map { p ->
+            var transliteratedPart = transliterate(p.toLowerCase(Locale.ROOT))
+            if (p[0].isUpperCase()) {
+                transliteratedPart =
+                    transliteratedPart[0].toUpperCase() + transliteratedPart.substring(
+                        1,
+                        transliteratedPart.length
+                    )
+            }
+            transliteratedPart
+        }
+
+        val result = StringBuilder()
+        transliteratedParts.forEach { p ->
+            result.append(p).append(divider)
+        }
+        return result.deleteCharAt(result.length - 1).toString()
     }
 
     private fun transliterate(cyr: String): String {
