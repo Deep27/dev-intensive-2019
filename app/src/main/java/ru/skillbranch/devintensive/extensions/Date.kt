@@ -2,7 +2,6 @@ package ru.skillbranch.devintensive.extensions
 
 import java.text.SimpleDateFormat
 import java.util.*
-import kotlin.math.abs
 
 const val SECOND = 1000L
 const val MINUTE = 60 * SECOND
@@ -28,7 +27,7 @@ fun Date.add(value: Int, unit: TimeUnits = TimeUnits.SECOND): Date {
 
 fun Date.humanizeDiff(date: Date = Date()): String {
     return when (val diff = date.time - time) {
-        in Long.MIN_VALUE until -DAY -> "более чем через год"
+        in Long.MIN_VALUE until -DAY * 360 -> "более чем через год"
         in -DAY * 360 until -HOUR * 26 -> "через ${TimeUnits.DAY.plural(-diff / DAY)}"
         in -HOUR * 26 until -HOUR * 22 -> "через день"
         in -HOUR * 22 until -MINUTE * 75 -> "через ${TimeUnits.HOUR.plural(-diff / HOUR)}"
