@@ -114,9 +114,8 @@ class ExampleUnitTest {
         assertEquals("101 день назад", Date().add(-101, TimeUnits.DAY).humanizeDiff())
         assertEquals("более года назад", Date().add(-2, TimeUnits.YEAR).humanizeDiff())
 
-//        TODO
-//        assertEquals("через 2 минуты", Date().add(2, TimeUnits.MINUTE).humanizeDiff())
-//        assertEquals("более чем через год", Date().add(2, TimeUnits.YEAR).humanizeDiff())
+        assertEquals("через 2 минуты", Date().add(2, TimeUnits.MINUTE).humanizeDiff())
+        assertEquals("более чем через год", Date().add(2, TimeUnits.YEAR).humanizeDiff())
     }
 
     @Test
