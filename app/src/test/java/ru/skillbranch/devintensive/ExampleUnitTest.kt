@@ -1,8 +1,7 @@
 package ru.skillbranch.devintensive
 
-import org.junit.Assert
+import org.junit.Assert.*
 import org.junit.Test
-
 import ru.skillbranch.devintensive.extensions.TimeUnits
 import ru.skillbranch.devintensive.extensions.add
 import ru.skillbranch.devintensive.extensions.format
@@ -14,30 +13,24 @@ import java.util.*
 class ExampleUnitTest {
 
     @Test
-    fun testInstance() {
-//        val user = User("1")
-//        val user2 = User("2", "John", "Wick")
-        val user3 = User("3", "John", "Cena", null, lastVisit = Date(), isOnline = true)
-
-//        user.printMe()
-//        user2.printMe()
-        user3.printMe()
-    }
-
-    @Test
     fun testFactory() {
         val user1 = User.makeUser("John Cena")
         val user2 = user1.copy(id = "2")
-        println("$user1\n$user2")
+        assertEquals(user1.firstName, user2.firstName)
+        assertEquals(user1.lastName, user2.lastName)
+        assertEquals(user1.introBit, user2.introBit)
+        assertEquals(user1.lastVisit, user2.lastVisit)
+        assertEquals(user1.avatar, user2.avatar)
+        assertNotEquals(user1.id, user2.id)
     }
 
     @Test
     fun testFullNameParsing() {
-        Assert.assertEquals(Utils.parseFullName("John Cena"), "John" to "Cena");
-        Assert.assertEquals(Utils.parseFullName(null), null to null);
-        Assert.assertEquals(Utils.parseFullName(""), null to null);
-        Assert.assertEquals(Utils.parseFullName(" "), null to null);
-        Assert.assertEquals(Utils.parseFullName("John"), "John" to null);
+        assertEquals("John" to "Cena", Utils.parseFullName("John Cena"));
+        assertEquals(null to null, Utils.parseFullName(null));
+        assertEquals(null to null, Utils.parseFullName(""));
+        assertEquals(null to null, Utils.parseFullName(" "));
+        assertEquals("John" to null, Utils.parseFullName("John"));
     }
 
     @Test
@@ -45,22 +38,18 @@ class ExampleUnitTest {
         val user = User.makeUser("John Wick")
         fun getUserInfo() = user
         val (id, firstName, lastName) = getUserInfo()
-        println("$id, $firstName, $lastName")
-        println(
-            "${getUserInfo().component1()}," +
-                    "${getUserInfo().component2()}," +
-                    "${getUserInfo().component3()}"
-        )
+        assertEquals(user.id, id)
+        assertEquals(user.firstName, firstName)
+        assertEquals(user.component3(), lastName)
     }
 
     @Test
     fun testCopy() {
         val user = User.makeUser("John Wick")
         val user2 = user.copy()
-
-        println("== ${user == user2}")
-        println("=== ${user === user2}")
-        println("hashCode == ${user.hashCode() == user2.hashCode()}")
+        assertEquals(user, user2)
+        assertFalse(user === user2)
+        assertEquals(user.hashCode(), user2.hashCode())
     }
 
     @Test
@@ -70,22 +59,35 @@ class ExampleUnitTest {
         val user3 = user.copy(lastVisit = Date().add(-2, TimeUnits.SECOND))
         val user4 = user.copy(lastName = "Wick", lastVisit = Date().add(2, TimeUnits.HOUR))
 
-        println(
-            """
-            ${user.lastVisit?.format()}
-            ${user2.lastVisit?.format()}
-            ${user3.lastVisit?.format()}
-            ${user4.lastVisit?.format()}
-        """.trimIndent()
-        )
+        val regex = "^\\d{2}:\\d{2}:\\d{2} \\d{2}\\.\\d{2}\\.\\d{2}$".toRegex()
+
+        assertNull(user.lastVisit?.format())
+        assertTrue(regex.containsMatchIn(user2.lastVisit!!.format()))
+        assertTrue(regex.containsMatchIn(user3.lastVisit!!.format()))
+        assertTrue(regex.containsMatchIn(user4.lastVisit!!.format()))
+    }
+
+    @Test
+    fun testToInitials() {
+        assertEquals("JC", Utils.toInitials("john", "cena"))
+        assertEquals("J", Utils.toInitials("John", null))
+        assertEquals(null, Utils.toInitials(null, null))
+        assertEquals(null, Utils.toInitials(" ", " "))
+        assertEquals(null, Utils.toInitials("", ""))
+    }
+
+    @Test
+    fun testTransliteration() {
+        assertEquals("Zhenya Stereotipov", Utils.transliteration("Женя Стереотипов"))
+        assertEquals("Amazing_Petr", Utils.transliteration("Amazing Петр", "_"))
     }
 
     @Test
     fun testDataMapping() {
-        val user = User.makeUser("John Cena")
-        println(user)
+        val user = User.makeUser("Женя Стереотипов")
         val userView = user.toUserView()
-        userView.printMe()
+        assertEquals("ЖС", userView.initials)
+        assertEquals("Zhenya Stereotipov", userView.nickname)
     }
 
     @Test
