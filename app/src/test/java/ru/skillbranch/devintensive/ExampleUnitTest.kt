@@ -120,6 +120,24 @@ class ExampleUnitTest {
     }
 
     @Test
+    fun testUserBuilder() {
+        val user = User.makeUser("John Cena")
+        val user2 = User.Builder()
+            .id("0")
+            .firstName("John")
+            .lastName("Cena")
+            .build()
+        assertEquals(user, user2)
+    }
+
+    @Test
+    fun testTruncate() {
+        assertEquals("Bender Bending R...", "Bender Bending Rodriguez — дословно «Сгибальщик Сгибающий Родригес»".truncate())
+        assertEquals("Bender Bending...", "Bender Bending Rodriguez — дословно «Сгибальщик Сгибающий Родригес»".truncate(15))
+        assertEquals("A", "A     ".truncate(3))
+    }
+
+    @Test
     fun testMessageFactory() {
         val user = User.makeUser("John Cena")
         val textMessage = BaseMessage.makeMessage(

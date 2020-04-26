@@ -12,3 +12,12 @@ fun String.extractFirstUpperChar(): String? {
 
 fun String.transliterateSingleChar(fromChar: String, toChar: String) =
     this.replace(fromChar.toRegex(), toChar)
+
+fun String.truncate(to: Int = 16): String {
+    var truncated = this.trim()
+    if (truncated.length < to) {
+        return truncated
+    }
+    truncated = truncated.substring(0, to).trim()
+    return "$truncated..."
+}
