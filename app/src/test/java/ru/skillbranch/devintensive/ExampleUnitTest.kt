@@ -2,10 +2,7 @@ package ru.skillbranch.devintensive
 
 import org.junit.Assert.*
 import org.junit.Test
-import ru.skillbranch.devintensive.extensions.TimeUnits
-import ru.skillbranch.devintensive.extensions.add
-import ru.skillbranch.devintensive.extensions.format
-import ru.skillbranch.devintensive.extensions.toUserView
+import ru.skillbranch.devintensive.extensions.*
 import ru.skillbranch.devintensive.models.*
 import ru.skillbranch.devintensive.utils.Utils
 import java.util.*
@@ -90,6 +87,36 @@ class ExampleUnitTest {
         val userView = user.toUserView()
         assertEquals("ЖС", userView.initials)
         assertEquals("Zhenya Stereotipov", userView.nickname)
+    }
+
+    @Test
+    fun testPlural() {
+        assertEquals("1 секунду", TimeUnits.SECOND.plural(1))
+        assertEquals("2 секунды", TimeUnits.SECOND.plural(2))
+        assertEquals("4 секунды", TimeUnits.SECOND.plural(4))
+        assertEquals("5 секунд", TimeUnits.SECOND.plural(5))
+        assertEquals("20 секунд", TimeUnits.SECOND.plural(20))
+        assertEquals("21 секунду", TimeUnits.SECOND.plural(21))
+        assertEquals("22 секунды", TimeUnits.SECOND.plural(22))
+        assertEquals("24 секунды", TimeUnits.SECOND.plural(24))
+        assertEquals("25 секунд", TimeUnits.SECOND.plural(25))
+    }
+
+    @Test
+    fun testHumanizeDiff() {
+        assertEquals("только что", Date().humanizeDiff())
+        assertEquals("несколько секунд назад", Date().add(-20, TimeUnits.SECOND).humanizeDiff())
+        assertEquals("минуту назад", Date().add(-60, TimeUnits.SECOND).humanizeDiff())
+        assertEquals("5 минут назад", Date().add(-5, TimeUnits.MINUTE).humanizeDiff())
+        assertEquals("час назад", Date().add(-46, TimeUnits.MINUTE).humanizeDiff())
+        assertEquals("11 часов назад", Date().add(-11, TimeUnits.HOUR).humanizeDiff())
+        assertEquals("день назад", Date().add(-25, TimeUnits.HOUR).humanizeDiff())
+        assertEquals("101 день назад", Date().add(-101, TimeUnits.DAY).humanizeDiff())
+        assertEquals("более года назад", Date().add(-2, TimeUnits.YEAR).humanizeDiff())
+
+//        TODO
+//        assertEquals("через 2 минуты", Date().add(2, TimeUnits.MINUTE).humanizeDiff())
+//        assertEquals("более чем через год", Date().add(2, TimeUnits.YEAR).humanizeDiff())
     }
 
     @Test
