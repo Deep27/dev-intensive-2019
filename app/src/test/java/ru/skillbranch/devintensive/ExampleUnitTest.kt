@@ -1,5 +1,6 @@
 package ru.skillbranch.devintensive
 
+import org.junit.Assert
 import org.junit.Test
 
 import ru.skillbranch.devintensive.extensions.TimeUnits
@@ -7,6 +8,7 @@ import ru.skillbranch.devintensive.extensions.add
 import ru.skillbranch.devintensive.extensions.format
 import ru.skillbranch.devintensive.extensions.toUserView
 import ru.skillbranch.devintensive.models.*
+import ru.skillbranch.devintensive.utils.Utils
 import java.util.*
 
 class ExampleUnitTest {
@@ -27,6 +29,15 @@ class ExampleUnitTest {
         val user1 = User.makeUser("John Cena")
         val user2 = user1.copy(id = "2")
         println("$user1\n$user2")
+    }
+
+    @Test
+    fun testFullNameParsing() {
+        Assert.assertEquals(Utils.parseFullName("John Cena"), "John" to "Cena");
+        Assert.assertEquals(Utils.parseFullName(null), null to null);
+        Assert.assertEquals(Utils.parseFullName(""), null to null);
+        Assert.assertEquals(Utils.parseFullName(" "), null to null);
+        Assert.assertEquals(Utils.parseFullName("John"), "John" to null);
     }
 
     @Test
