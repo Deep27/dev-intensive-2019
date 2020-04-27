@@ -47,6 +47,12 @@ class Bender(
         }
     }
 
+//    Question.NAME -> "Имя должно начинаться с заглавной буквы"
+//    Question.PROFESSION -> "Профессия должна начинаться со строчной буквы"
+//    Question.MATERIAL -> "Материал не должен содержать цифр"
+//    Question.BDAY -> "Год моего рождения должен содержать только цифры"
+//    Question.SERIAL -> "Серийный номер содержит только цифры, и их 7"
+//    Question.IDLE -> //игнорировать валидацию
     enum class Question(val question: String, val answers: List<String>) {
         NAME("Как меня зовут?", listOf("Бендер", "bender")) {
             override fun nextQuestion(): Question = PROFESSION
