@@ -64,7 +64,7 @@ class Bender(
             "Как меня зовут?", listOf("Бендер", "Bender"),
             listOf(
                 Pair(
-                    { answer -> answer[0].isUpperCase() },
+                    { answer -> !answer.isEmpty() && answer[0].isUpperCase() },
                     "Имя должно начинаться с заглавной буквы"
                 )
             )
@@ -74,7 +74,7 @@ class Bender(
         PROFESSION(
             "Назови мою профессию?", listOf("сгибальщик", "bender"), listOf(
                 Pair(
-                    { answer -> answer[0].isLowerCase() },
+                    { answer -> !answer.isEmpty() && answer[0].isLowerCase() },
                     "Профессия должна начинаться со строчной буквы"
                 )
             )
@@ -85,8 +85,8 @@ class Bender(
             "Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood"),
             listOf(
                 Pair(
-                    {
-                            answer -> answer.matches("[^\\d]*".toRegex())
+                    { answer ->
+                        answer.matches("[^\\d]*".toRegex())
                     },
                     "Материал не должен содержать цифр"
                 )
