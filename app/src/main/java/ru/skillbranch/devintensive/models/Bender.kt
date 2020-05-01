@@ -1,5 +1,7 @@
 package ru.skillbranch.devintensive.models
 
+import java.util.function.Predicate
+
 class Bender(
     var status: Status = Status.NORMAL,
     var question: Question = Question.NAME,
@@ -47,32 +49,74 @@ class Bender(
         }
     }
 
-//    Question.NAME -> "Имя должно начинаться с заглавной буквы"
-//    Question.PROFESSION -> "Профессия должна начинаться со строчной буквы"
-//    Question.MATERIAL -> "Материал не должен содержать цифр"
-//    Question.BDAY -> "Год моего рождения должен содержать только цифры"
-//    Question.SERIAL -> "Серийный номер содержит только цифры, и их 7"
-//    Question.IDLE -> //игнорировать валидацию
-    enum class Question(val question: String, val answers: List<String>) {
-        NAME("Как меня зовут?", listOf("Бендер", "bender")) {
+    enum class Question(
+        val question: String,
+        val answers: List<String>,
+        val answerRules: List<Pair<Predicate<String>, String>>
+    ) {
+        NAME(
+            "Как меня зовут?", listOf("Бендер", "Bender"),
+            listOf(
+                Pair(
+                    Predicate { answer -> answer[0].isUpperCase() },
+                    "Имя должно начинаться с заглавной буквы"
+                )
+            )
+        ) {
             override fun nextQuestion(): Question = PROFESSION
         },
-        PROFESSION("Назови мою профессию?", listOf("сгибальщик", "bender")) {
+        PROFESSION(
+            "Назови мою профессию?", listOf("сгибальщик", "bender"), listOf(
+                Pair(
+                    Predicate { answer -> answer[0].isLowerCase() },
+                    "Профессия должна начинаться со строчной буквы"
+                )
+            )
+        ) {
             override fun nextQuestion(): Question = MATERIAL
         },
-        MATERIAL("Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood")) {
+        MATERIAL(
+            "Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood"),
+            listOf(
+                Pair(
+                    Predicate { answer -> answer.matches("[^\\d].*".toRegex()) },
+                    "Материал не должен содержать цифр"
+                )
+            )
+        ) {
             override fun nextQuestion(): Question = BDAY
         },
-        BDAY("Когда меня создали?", listOf("2993")) {
+        BDAY(
+            "Когда меня создали?",
+            listOf("2993"),
+            listOf(
+                Pair(
+                    Predicate { answer -> answer.matches("\\d+".toRegex()) },
+                    "Год моего рождения должен содержать только цифры"
+                )
+            )
+        ) {
             override fun nextQuestion(): Question = SERIAL
         },
-        SERIAL("Мой серийный номер?", listOf("2716057")) {
+        SERIAL(
+            "Мой серийный номер?",
+            listOf("2716057"),
+            listOf(
+                Pair(
+                    Predicate { answer -> answer.matches("\\d{7}".toRegex()) },
+                    "Серийный номер содержит только цифры, и их 7"
+                )
+            )
+        ) {
             override fun nextQuestion(): Question = IDLE
         },
-        IDLE("На этом все, вопросов больше нет", listOf()) {
+        IDLE("На этом все, вопросов больше нет", listOf(), listOf()) {
             override fun nextQuestion(): Question = IDLE
         };
 
         abstract fun nextQuestion(): Question
+        fun checkAnswer(answer: String): String? {
+            return null
+        }
     }
 }
