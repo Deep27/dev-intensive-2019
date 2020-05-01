@@ -1,7 +1,5 @@
 package ru.skillbranch.devintensive.models
 
-import java.util.function.Predicate
-
 class Bender(
     var status: Status = Status.NORMAL,
     var question: Question = Question.NAME,
@@ -18,20 +16,28 @@ class Bender(
     }
 
     fun listenAnswer(answer: String): Pair<String, Triple<Int, Int, Int>> {
-        return if (question.answers.contains(answer)) {
-            question = question.nextQuestion()
-            "Отлично - ты справился\n${question.question}" to status.color
-        } else {
-            return if (wrongAnswers++ == 3) {
-                wrongAnswers = 0
-                status = Status.NORMAL
-                question = Question.NAME
-                "Это неправильный ответ. Давай все по новой\n${question.question}" to status.color
-            } else {
-                status = status.nextStatus()
-                "Это неправильный ответ\n${question.question}" to status.color
-            }
+
+        if (question == Question.IDLE) {
+            return question.question to status.color
         }
+
+        val errorMessage = question.checkAnswer(answer)
+            ?: return if (question.answers.contains(answer)) {
+                question = question.nextQuestion()
+                "Отлично - ты справился\n${question.question}" to status.color
+            } else {
+                return if (wrongAnswers++ == 3) {
+                    wrongAnswers = 0
+                    status = Status.NORMAL
+                    question = Question.NAME
+                    "Это неправильный ответ. Давай все по новой\n${question.question}" to status.color
+                } else {
+                    status = status.nextStatus()
+                    "Это неправильный ответ\n${question.question}" to status.color
+                }
+            }
+
+        return "$errorMessage\n${question.question}" to status.color
     }
 
     enum class Status(val color: Triple<Int, Int, Int>) {
@@ -52,13 +58,13 @@ class Bender(
     enum class Question(
         val question: String,
         val answers: List<String>,
-        val answerRules: List<Pair<Predicate<String>, String>>
+        private val answerRules: List<Pair<(String) -> Boolean, String>>
     ) {
         NAME(
             "Как меня зовут?", listOf("Бендер", "Bender"),
             listOf(
                 Pair(
-                    Predicate { answer -> answer[0].isUpperCase() },
+                    { answer -> answer[0].isUpperCase() },
                     "Имя должно начинаться с заглавной буквы"
                 )
             )
@@ -68,7 +74,7 @@ class Bender(
         PROFESSION(
             "Назови мою профессию?", listOf("сгибальщик", "bender"), listOf(
                 Pair(
-                    Predicate { answer -> answer[0].isLowerCase() },
+                    { answer -> answer[0].isLowerCase() },
                     "Профессия должна начинаться со строчной буквы"
                 )
             )
@@ -79,7 +85,9 @@ class Bender(
             "Из чего я сделан?", listOf("металл", "дерево", "metal", "iron", "wood"),
             listOf(
                 Pair(
-                    Predicate { answer -> answer.matches("[^\\d].*".toRegex()) },
+                    {
+                            answer -> answer.matches("[^\\d]*".toRegex())
+                    },
                     "Материал не должен содержать цифр"
                 )
             )
@@ -91,7 +99,7 @@ class Bender(
             listOf("2993"),
             listOf(
                 Pair(
-                    Predicate { answer -> answer.matches("\\d+".toRegex()) },
+                    { answer -> answer.matches("\\d+".toRegex()) },
                     "Год моего рождения должен содержать только цифры"
                 )
             )
@@ -103,7 +111,7 @@ class Bender(
             listOf("2716057"),
             listOf(
                 Pair(
-                    Predicate { answer -> answer.matches("\\d{7}".toRegex()) },
+                    { answer -> answer.matches("\\d{7}".toRegex()) },
                     "Серийный номер содержит только цифры, и их 7"
                 )
             )
@@ -115,7 +123,13 @@ class Bender(
         };
 
         abstract fun nextQuestion(): Question
+
         fun checkAnswer(answer: String): String? {
+            for ((predicate, errorMessage) in answerRules) {
+                if (!predicate.invoke(answer)) {
+                    return errorMessage
+                }
+            }
             return null
         }
     }
