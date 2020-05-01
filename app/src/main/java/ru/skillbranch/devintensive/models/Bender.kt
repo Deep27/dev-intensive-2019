@@ -64,7 +64,7 @@ class Bender(
             "Как меня зовут?", listOf("Бендер", "Bender"),
             listOf(
                 Pair(
-                    { answer -> !answer.isEmpty() && answer[0].isUpperCase() },
+                    { answer -> !answer.isEmpty() && answer[0].isUpperCase() || answer.isEmpty() },
                     "Имя должно начинаться с заглавной буквы"
                 )
             )
@@ -74,7 +74,7 @@ class Bender(
         PROFESSION(
             "Назови мою профессию?", listOf("сгибальщик", "bender"), listOf(
                 Pair(
-                    { answer -> !answer.isEmpty() && answer[0].isLowerCase() },
+                    { answer -> answer.isEmpty() && answer[0].isLowerCase() || answer.isEmpty() },
                     "Профессия должна начинаться со строчной буквы"
                 )
             )
