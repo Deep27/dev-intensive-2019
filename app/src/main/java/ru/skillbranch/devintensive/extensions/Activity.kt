@@ -13,7 +13,7 @@ fun Activity.hideKeyboard() {
     imm.hideSoftInputFromWindow(window.decorView.windowToken, 0)
 }
 
-fun Activity.getRootView() = findViewById<View>(android.R.id.content);
+fun Activity.getRootView(): View = findViewById(android.R.id.content);
 
 fun Activity.isKeyboardOpen(): Boolean {
     val visibleBounds = Rect()
