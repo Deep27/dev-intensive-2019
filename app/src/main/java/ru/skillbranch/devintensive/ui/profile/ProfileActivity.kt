@@ -13,7 +13,7 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
     }
 
-    override fun onSaveInstanceState(outState: Bundle?) {
+    override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
     }
 }
