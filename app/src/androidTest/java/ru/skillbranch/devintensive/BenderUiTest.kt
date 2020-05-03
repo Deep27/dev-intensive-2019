@@ -10,13 +10,14 @@ import androidx.test.rule.ActivityTestRule
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import ru.skillbranch.devintensive.ui.profile.ProfileActivity
 
 @RunWith(AndroidJUnit4::class)
 class BenderUiTest {
 
     @Rule
     @JvmField
-    val mainActivityRule = ActivityTestRule(MainActivity::class.java)
+    val mainActivityRule = ActivityTestRule(ProfileActivity::class.java)
 
     @Test
     fun testSoftErrorsWorkflow() {
