@@ -10,7 +10,7 @@ class ProfileActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         Log.d("M_MainActivity", "onCreate")
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_profile)
+        setContentView(R.layout.activity_profile_constraint)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
