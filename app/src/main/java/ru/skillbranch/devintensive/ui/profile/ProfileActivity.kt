@@ -28,9 +28,13 @@ class ProfileActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        outState.putBoolean(IS_EDIT_MODE, isEditMode)
     }
 
     private fun initViews(savedInstanceState: Bundle?) {
+
+        isEditMode = savedInstanceState?.getBoolean(IS_EDIT_MODE, false) ?: false
+
         viewFields = mapOf(
             "nickname" to tv_nick_name,
             "rank" to tv_rank,
