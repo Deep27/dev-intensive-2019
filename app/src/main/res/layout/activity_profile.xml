@@ -42,6 +42,7 @@
                 android:src="@drawable/avatar_default" />
 
             <ImageButton
+                android:id="@+id/btn_edit"
                 android:layout_width="@dimen/btn_round_size_40"
                 android:layout_height="@dimen/btn_round_size_40"
                 android:layout_marginStart="@dimen/spacing_huge_32"
@@ -51,7 +52,7 @@
                 android:src="@drawable/ic_edit_black_24dp" />
 
             <TextView
-                android:id="@+id/tv_name"
+                android:id="@+id/tv_nick_name"
                 style="@style/Profile.Header.Nickname"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -64,7 +65,7 @@
                 style="@style/Profile.Header.Rank"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_below="@id/tv_name"
+                android:layout_below="@id/tv_nick_name"
                 android:layout_centerHorizontal="true"
                 android:text="Junior Android Developer" />
         </RelativeLayout>
@@ -86,6 +87,7 @@
             android:paddingBottom="@dimen/spacing_normal_16">
 
             <TextView
+                android:id="@+id/tv_rating"
                 style="@style/Profile.Metrics.Value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -116,6 +118,7 @@
             android:paddingBottom="@dimen/spacing_normal_16">
 
             <TextView
+                android:id="@+id/tv_respect"
                 style="@style/Profile.Metrics.Value"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -248,6 +251,7 @@
         </com.google.android.material.textfield.TextInputLayout>
 
         <ImageView
+            android:id="@+id/ic_eye"
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:layout_gravity="center_vertical"
