@@ -6,7 +6,6 @@ import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
@@ -16,6 +15,7 @@ import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_profile.*
 import ru.skillbranch.devintensive.R
 import ru.skillbranch.devintensive.models.Profile
+import ru.skillbranch.devintensive.utils.Utils
 import ru.skillbranch.devintensive.viewmodels.ProfileViewModel
 
 class ProfileActivity : AppCompatActivity() {
@@ -51,7 +51,6 @@ class ProfileActivity : AppCompatActivity() {
         setContentView(R.layout.activity_profile)
         initViews(savedInstanceState)
         initViewModel()
-        Log.d("M_ProfileActivity", "onCreate")
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -71,10 +70,10 @@ class ProfileActivity : AppCompatActivity() {
                 v.text = it[k].toString()
             }
         }
+        updateAvatar()
     }
 
     private fun updateTheme(mode: Int) {
-        Log.d("M_ProfileActivity", "updateTheme")
         delegate.setLocalNightMode(mode)
     }
 
@@ -183,5 +182,12 @@ class ProfileActivity : AppCompatActivity() {
         }
 
         return null
+    }
+
+    private fun updateAvatar() {
+        val firstName = viewModel.getProfileData().getValue()?.firstName
+        val lastName = viewModel.getProfileData().getValue()?.lastName
+        val initials = Utils.toInitials(firstName, lastName)
+        iv_avatar.setText(initials)
     }
 }

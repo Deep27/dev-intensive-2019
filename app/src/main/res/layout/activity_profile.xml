@@ -34,13 +34,17 @@
                 android:background="@drawable/btn_round_bg"
                 android:src="@drawable/ic_brightness_black_24dp" />
 
-            <ImageView
+            <TextView
                 android:id="@+id/iv_avatar"
                 android:layout_width="@dimen/avatar_round_size"
                 android:layout_height="@dimen/avatar_round_size"
                 android:layout_centerHorizontal="true"
-                android:background="@drawable/btn_round_bg"
-                android:src="@drawable/avatar_default" />
+                android:background="@drawable/text_avatar"
+                android:gravity="center"
+                android:text=""
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/color_white"
+                android:textSize="@dimen/font_enermous_50" />
 
             <ImageButton
                 android:id="@+id/btn_edit"
