@@ -17,8 +17,8 @@ class CircleImageView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : AppCompatImageView(context, attrs, defStyleAttr) {
 
-    val paint: Paint = Paint()
-    val borderPaint: Paint = Paint()
+    private val paint: Paint = Paint()
+    private val borderPaint: Paint = Paint()
 
     private var borderWidth: Int = DEFAULT_BORDER_WIDTH
     private var borderColor: Int = DEFAULT_BORDER_COLOR
