@@ -4,13 +4,14 @@ import android.graphics.ColorFilter
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffColorFilter
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelProviders
 import kotlinx.android.synthetic.main.activity_profile.*
 import ru.skillbranch.devintensive.R
@@ -21,6 +22,23 @@ class ProfileActivity : AppCompatActivity() {
 
     companion object {
         const val IS_EDIT_MODE = "IS_EDIT_MODE"
+        val GITHUB_URL_REGEX =
+            "^(https://)?(www\\.)?github\\.com/[a-zA-Z\\-\\d]+[/]?$".toRegex()
+        val GITHUB_EXCLUSIONS = setOf(
+            "enterprise",
+            "features",
+            "topics",
+            "collections",
+            "trending",
+            "events",
+            "marketplace",
+            "pricing",
+            "nonprofit",
+            "customer-stories",
+            "security",
+            "login",
+            "join"
+        )
     }
 
     private lateinit var viewModel: ProfileViewModel
@@ -28,8 +46,7 @@ class ProfileActivity : AppCompatActivity() {
     lateinit var viewFields: Map<String, TextView>
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // TODO set theme before view initialization
-//        setTheme(R.style.AppTheme)
+        setTheme(R.style.AppTheme)
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_profile)
         initViews(savedInstanceState)
@@ -64,6 +81,8 @@ class ProfileActivity : AppCompatActivity() {
     private fun initViews(savedInstanceState: Bundle?) {
 
         isEditMode = savedInstanceState?.getBoolean(IS_EDIT_MODE, false) ?: false
+
+        et_repository.addTextChangedListener(githubRepoWatcher)
 
         viewFields = mapOf(
             "nickName" to tv_nick_name,
@@ -125,11 +144,44 @@ class ProfileActivity : AppCompatActivity() {
     }
 
     private fun saveProfileInfo() {
+        val githubValidationError = validateGithubUrl(et_repository.text)
+        if (githubValidationError != null) {
+            et_repository.setText("")
+        }
         Profile(
             firstName = et_first_name.text.toString(),
             lastName = et_last_name.text.toString(),
             about = et_about.text.toString(),
             repository = et_repository.text.toString()
         ).apply { viewModel.setProfileData(this) }
+    }
+
+    private val githubRepoWatcher: TextWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        override fun afterTextChanged(s: Editable?) {
+            val error = validateGithubUrl(s)
+            et_repository.setError(error)
+        }
+    }
+
+    private fun validateGithubUrl(url: Editable?): String? {
+        if (url == null || url.isEmpty()) {
+            return null
+        }
+
+        val error = "Невалидный адрес репозитория"
+
+        if (!GITHUB_URL_REGEX.containsMatchIn(url)) {
+            return error
+        }
+
+        GITHUB_EXCLUSIONS.forEach {
+            if (it in url) {
+                return error
+            }
+        }
+
+        return null
     }
 }

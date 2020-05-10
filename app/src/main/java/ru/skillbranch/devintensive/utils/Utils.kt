@@ -34,17 +34,19 @@ object Utils {
     }
 
     fun transliteration(payload: String, divider: String = " "): String {
-        val transliteratedParts = payload.split(" ").map { p ->
-            var transliteratedPart = transliterate(p.toLowerCase(Locale.ROOT))
-            if (p[0].isUpperCase()) {
-                transliteratedPart =
-                    transliteratedPart[0].toUpperCase() + transliteratedPart.substring(
-                        1,
-                        transliteratedPart.length
-                    )
+        val transliteratedParts = payload.split(" ")
+            .filter { p -> p.isNotEmpty() }
+            .map { p ->
+                var transliteratedPart = transliterate(p.toLowerCase(Locale.ROOT))
+                if (p[0].isUpperCase()) {
+                    transliteratedPart =
+                        transliteratedPart[0].toUpperCase() + transliteratedPart.substring(
+                            1,
+                            transliteratedPart.length
+                        )
+                }
+                transliteratedPart
             }
-            transliteratedPart
-        }
 
         val result = StringBuilder()
         transliteratedParts.forEach { p ->
