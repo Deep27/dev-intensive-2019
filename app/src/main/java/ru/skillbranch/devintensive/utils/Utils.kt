@@ -52,7 +52,7 @@ object Utils {
         transliteratedParts.forEach { p ->
             result.append(p).append(divider)
         }
-        return result.deleteCharAt(result.length - 1).toString()
+        return if (result.isEmpty()) "" else result.deleteCharAt(result.length - 1).toString()
     }
 
     private fun transliterate(cyr: String): String {
