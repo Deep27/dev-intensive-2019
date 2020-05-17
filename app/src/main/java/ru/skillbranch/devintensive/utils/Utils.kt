@@ -38,13 +38,13 @@ object Utils {
             .filter { p -> p.isNotEmpty() }
             .map { p ->
                 var transliteratedPart = transliterate(p.toLowerCase(Locale.ROOT))
-                if (p[0].isUpperCase()) {
+//                if (p[0].isUpperCase()) {
                     transliteratedPart =
                         transliteratedPart[0].toUpperCase() + transliteratedPart.substring(
                             1,
                             transliteratedPart.length
                         )
-                }
+//                }
                 transliteratedPart
             }
 
