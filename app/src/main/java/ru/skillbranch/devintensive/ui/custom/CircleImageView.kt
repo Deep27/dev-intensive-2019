@@ -2,13 +2,15 @@ package ru.skillbranch.devintensive.ui.custom
 
 import android.content.Context
 import android.graphics.*
-import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.AttributeSet
-import android.view.View
-import androidx.annotation.ColorRes
+import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
+import androidx.annotation.Px
 import androidx.appcompat.widget.AppCompatImageView
-import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toBitmap
 import ru.skillbranch.devintensive.R
 
 class CircleImageView @JvmOverloads constructor(
@@ -17,123 +19,422 @@ class CircleImageView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ) : AppCompatImageView(context, attrs, defStyleAttr) {
 
-    private val paint: Paint = Paint()
-    private val borderPaint: Paint = Paint()
-
-    private var borderWidth: Int = DEFAULT_BORDER_WIDTH
-    private var borderColor: Int = DEFAULT_BORDER_COLOR
-    private var viewWidth: Float = 0f
-    private var viewHeight: Float = 0f
-    private var image: Bitmap? = null
-    private var shader: BitmapShader? = null
-
     companion object {
         private const val DEFAULT_BORDER_WIDTH = 2
-        private const val DEFAULT_BORDER_COLOR = 0xfff
+        private const val DEFAULT_BORDER_BORDER_COLOR = Color.WHITE // R.attr.colorAccent
+        private const val DEFAULT_SIZE = 40
     }
+
+    @Px
+    var borderWidth: Float = context.dpToPx(DEFAULT_BORDER_WIDTH)
+
+    @ColorInt
+    private var borderColor: Int = Color.WHITE
+    private var initials: String = "??"
+
+    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val avatarPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val initialsPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+    private val viewRect = Rect()
+    private val borderRect = Rect()
+
+    private var isAvatarMode = true
 
     init {
         if (attrs != null) {
-            val a = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
-            borderWidth = a.getDimensionPixelSize(R.styleable.CircleImageView_cv_borderWidth, DEFAULT_BORDER_WIDTH)
-            borderColor =
-                a.getColor(R.styleable.CircleImageView_cv_borderColor, DEFAULT_BORDER_COLOR)
-            a.recycle()
-        }
-
-        paint.setAntiAlias(true)
-        setBorderColor(R.color.color_white)
-        borderPaint.setAntiAlias(true)
-        setLayerType(View.LAYER_TYPE_SOFTWARE, borderPaint)
-    }
-
-    fun getBorderColor(): Int = borderColor
-
-    fun setBorderColor(@ColorRes colorId: Int) {
-        borderColor = ContextCompat.getColor(context, colorId)
-        borderPaint.setColor(borderColor)
-        invalidate()
-    }
-
-    fun setBorderColor(hex: String) {
-        borderColor = Color.parseColor(hex)
-        borderPaint.setColor(borderColor)
-        invalidate()
-    }
-
-    @Dimension
-    fun getBorderWidth(): Int = borderWidth
-
-    fun setBorderWidth(@Dimension dp: Int) {
-        borderWidth = dp
-        invalidate()
-    }
-
-    override fun onDraw(canvas: Canvas?) {
-
-        val bitmapDrawable = getDrawable()
-        if (bitmapDrawable != null) {
-            image = (bitmapDrawable as BitmapDrawable).getBitmap()
-        }
-
-        if (image != null) {
-            shader = BitmapShader(
-                Bitmap.createScaledBitmap(image!!, getWidth(), getHeight(), false),
-                Shader.TileMode.CLAMP, Shader.TileMode.CLAMP
+            val ta = context.obtainStyledAttributes(attrs, R.styleable.CircleImageView)
+            borderWidth = ta.getDimension(
+                R.styleable.CircleImageView_cv_borderWidth,
+                context.dpToPx(DEFAULT_BORDER_WIDTH)
             )
-            paint.setShader(shader)
-            val circleCenter = viewWidth / 2
-
-            if (canvas != null) {
-                canvas.drawCircle(
-                    circleCenter + borderWidth,
-                    circleCenter + borderWidth,
-                    circleCenter + borderWidth - 4.0f,
-                    borderPaint
-                )
-                canvas.drawCircle(
-                    circleCenter + borderWidth,
-                    circleCenter + borderWidth,
-                    circleCenter - 4.0f,
-                    paint
-                )
-            }
+            borderColor = ta.getColor(
+                R.styleable.CircleImageView_cv_borderColor,
+                DEFAULT_BORDER_BORDER_COLOR
+            )
+            initials = ta.getString(R.styleable.CircleImageView_cv_initials) ?: "??"
+            ta.recycle()
         }
+
+        scaleType = ScaleType.CENTER_CROP
+        setup()
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val width = measureWidth(widthMeasureSpec)
-        val height = measureHeight(heightMeasureSpec, widthMeasureSpec)
+//        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
 
-        viewWidth = ((width - (borderWidth * 2)).toFloat())
-        viewHeight = (height - (borderWidth * 2)).toFloat()
-
-        setMeasuredDimension(width, height)
+        val initSize = resolveDefaultSize(widthMeasureSpec)
+        setMeasuredDimension(initSize, initSize)
     }
 
-    private fun measureWidth(measureSpec: Int): Int {
-        val specMode = MeasureSpec.getMode(measureSpec)
-        val specSize = MeasureSpec.getSize(measureSpec)
+    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+        super.onSizeChanged(w, h, oldw, oldh)
 
-        return if (specMode == MeasureSpec.EXACTLY) {
-            // we were told how big to be
-            specSize
+        if (w == 0) return
+        with(viewRect) {
+            left = 0
+            top = 0
+            right = w
+            bottom = h
+        }
+        prepareShader(w, h)
+    }
+
+    override fun onDraw(canvas: Canvas) {
+//        super.onDraw(canvas)
+
+        if (drawable != null && isAvatarMode) drawAvatar(canvas)
+        else drawInitials(canvas)
+
+        // resize rect
+        val half = (borderWidth / 2).toInt()
+        with(borderRect) {
+            set(viewRect)
+            inset(half, half)
+        }
+        canvas.drawOval(RectF(borderRect), borderPaint)
+    }
+
+    override fun setImageBitmap(bm: Bitmap?) {
+        super.setImageBitmap(bm)
+        if (isAvatarMode) prepareShader(width, height)
+    }
+
+    override fun setImageDrawable(drawable: Drawable?) {
+        super.setImageDrawable(drawable)
+        if (isAvatarMode) prepareShader(width, height)
+    }
+
+    override fun setImageResource(resId: Int) {
+        super.setImageResource(resId)
+        if (isAvatarMode) prepareShader(width, height)
+    }
+
+    override fun onSaveInstanceState(): Parcelable? {
+        val savedState = SavedState(super.onSaveInstanceState())
+        savedState.isAvatarMode = isAvatarMode
+        savedState.borderWidth = borderWidth
+        savedState.borderColor = borderColor
+        return savedState
+    }
+
+    override fun onRestoreInstanceState(state: Parcelable?) {
+//        super.onRestoreInstanceState(state) // or here ?
+        if (state is SavedState) {
+            state.also { // ??
+                isAvatarMode = state.isAvatarMode
+                borderWidth = state.borderWidth
+                borderColor = state.borderColor
+            }
+
+            with(borderPaint) {
+                color = borderColor
+                strokeWidth = borderWidth
+            }
         } else {
-            // measure the text
-            viewWidth.toInt()
+            super.onRestoreInstanceState(state)
         }
     }
 
-    private fun measureHeight(measureSpecHeight: Int, measureSpecWidth: Int): Int {
-        val specMode = MeasureSpec.getMode(measureSpecHeight)
-        val specSize = MeasureSpec.getSize(measureSpecHeight)
+    fun setInitials(initials: String) {
+        this.initials = initials
+        if (!isAvatarMode) invalidate()
+    }
 
-        return if (specMode == MeasureSpec.EXACTLY) {
-            // we were told hom big to be
-            specSize
-        } else {
-            // measure text (ascent is a negative number)
-            viewHeight.toInt() + 2
+    fun setBorderColor(@ColorInt color: Int) {
+        borderColor = color
+        borderPaint.color = borderColor
+        invalidate()
+    }
+
+    fun setBorderWidth(@Dimension width: Int) {
+        borderWidth = context.dpToPx(width)
+        borderPaint.strokeWidth = borderWidth
+        invalidate()
+    }
+
+    private fun setup() {
+        with(borderPaint) {
+            style = Paint.Style.STROKE
+            strokeWidth = borderWidth
+            color = borderColor
+        }
+    }
+
+    private fun prepareShader(w: Int, h: Int) {
+        if (w == 0 || drawable == null) return
+        val srcBm = drawable.toBitmap(w, h, Bitmap.Config.ARGB_8888)
+        avatarPaint.shader = BitmapShader(srcBm, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+    }
+
+    private fun resolveDefaultSize(spec: Int): Int {
+        return when (MeasureSpec.getMode(spec)) {
+            MeasureSpec.UNSPECIFIED -> context.dpToPx(DEFAULT_SIZE).toInt()
+            else -> MeasureSpec.getSize(spec)
+        }
+    }
+
+    private fun drawAvatar(canvas: Canvas) {
+        canvas.drawOval(RectF(viewRect), avatarPaint)
+    }
+
+    private fun drawInitials(canvas: Canvas) {
+//        initialsPaint.color = Color.WHITE
+        canvas.drawOval(RectF(viewRect), initialsPaint)
+        with(initialsPaint) {
+            color = Color.WHITE
+            textAlign = Paint.Align.CENTER
+            textSize = height * 0.33f
+        }
+
+        val offsetY = (initialsPaint.descent() + initialsPaint.ascent()) / 2
+        canvas.drawText(
+            initials,
+            viewRect.exactCenterX(),
+            viewRect.exactCenterY() - offsetY,
+            initialsPaint
+        )
+    }
+
+    private class SavedState : BaseSavedState, Parcelable {
+
+        var isAvatarMode: Boolean = true
+        var borderWidth: Float = 0f
+        var borderColor: Int = 0
+
+        constructor(superState: Parcelable?) : super(superState)
+
+        constructor(src: Parcel) : super(src) {
+            isAvatarMode = src.readInt() == 1
+            borderWidth = src.readFloat()
+            borderColor = src.readInt()
+        }
+
+        override fun writeToParcel(dst: Parcel, flags: Int) {
+            super.writeToParcel(dst, flags)
+            dst.writeInt(if (isAvatarMode) 1 else 0)
+            dst.writeFloat(borderWidth)
+            dst.writeInt(borderColor)
+        }
+
+        override fun describeContents() = 0
+
+        companion object CREATOR : Parcelable.Creator<SavedState> {
+            override fun createFromParcel(parcel: Parcel) = SavedState(parcel)
+            override fun newArray(size: Int): Array<SavedState?> = arrayOfNulls(size)
         }
     }
 }
+
+fun Context.dpToPx(dp: Int): Float = dp.toFloat() * this.resources.displayMetrics.density
+
+
+//package ru.skillbranch.devintensive.ui.custom
+//
+//import android.content.Context
+//import android.graphics.*
+//import android.util.AttributeSet
+//import androidx.annotation.ColorInt
+//import androidx.annotation.Px
+//import androidx.appcompat.widget.AppCompatImageView
+//import androidx.core.graphics.drawable.toBitmap
+//import ru.skillbranch.devintensive.R
+//
+//class AvatarImageViewMask @JvmOverloads constructor(
+//    context: Context,
+//    attrs: AttributeSet? = null,
+//    defStyleAttr: Int = 0
+//) : AppCompatImageView(context, attrs, defStyleAttr) {
+//
+//    companion object {
+//        private const val DEFAULT_BORDER_WIDTH = 2
+//        private const val DEFAULT_BORDER_BORDER_COLOR = Color.WHITE // R.attr.colorAccent
+//        private const val DEFAULT_SIZE = 40
+//    }
+//
+//    @Px
+//    var borderWidth: Float = context.dpToPx(DEFAULT_BORDER_WIDTH)
+//    @ColorInt
+//    private var borderColor: Int = Color.WHITE
+//    private var initials: String = "??"
+//
+//    private val maskPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+//    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+//    private val viewRect = Rect()
+//    private lateinit var resultBm: Bitmap
+//    private lateinit var maskBm: Bitmap
+//    private lateinit var srcBm: Bitmap
+//
+//    init {
+//        if (attrs != null) {
+//            val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarImageViewMask)
+//            borderWidth = ta.getDimension(R.styleable.AvatarImageViewMask_aiv_borderWidth, context.dpToPx(DEFAULT_BORDER_WIDTH))
+//            borderColor = ta.getColor(R.styleable.AvatarImageViewMask_aiv_borderColor, DEFAULT_BORDER_BORDER_COLOR)
+//            initials = ta.getString(R.styleable.AvatarImageViewMask_aiv_initials) ?: "??"
+//            ta.recycle()
+//        }
+//
+//        scaleType = ScaleType.CENTER_CROP
+//        setup()
+//    }
+//
+//    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+////        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+//
+//        val initSize = resolveDefaultSize(widthMeasureSpec)
+//        setMeasuredDimension(initSize, initSize)
+//    }
+//
+//    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+//        super.onSizeChanged(w, h, oldw, oldh)
+//
+//        if (w == 0) return
+//        with(viewRect) {
+//            left = 0
+//            top = 0
+//            right = w
+//            bottom = h
+//        }
+//        prepareBitmaps(w, h)
+//    }
+//
+//    override fun onDraw(canvas: Canvas) {
+////        super.onDraw(canvas)
+//        // NOT allocate, ONLY draw
+//        canvas.drawBitmap(resultBm, viewRect, viewRect, null)
+//        // resize rect
+//        val half = (borderWidth / 2).toInt()
+//        viewRect.inset(half, half)
+//        canvas.drawOval(RectF(viewRect), borderPaint)
+//    }
+//
+//    private fun setup() {
+//        with(maskPaint) {
+//            color = Color.RED
+//            style = Paint.Style.FILL
+//        }
+//        with(borderPaint) {
+//            style = Paint.Style.STROKE
+//            strokeWidth = borderWidth
+//            color = borderColor
+//        }
+//    }
+//
+//    private fun prepareBitmaps(w: Int, h: Int) {
+//        maskBm = Bitmap.createBitmap(w, h, Bitmap.Config.ALPHA_8)
+//        resultBm = maskBm.copy(Bitmap.Config.ARGB_8888, true)
+//        val maskCanvas = Canvas(maskBm)
+//        maskCanvas.drawOval(RectF(viewRect), maskPaint)
+//        maskPaint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+//        srcBm = drawable.toBitmap(w, h, Bitmap.Config.ARGB_8888)
+//
+//        val resultCanvas = Canvas(resultBm)
+//        resultCanvas.drawBitmap(maskBm, viewRect, viewRect, null)
+//        resultCanvas.drawBitmap(srcBm, viewRect, viewRect, maskPaint)
+//    }
+//
+//    private fun resolveDefaultSize(spec: Int): Int {
+//        return when (MeasureSpec.getMode(spec)) {
+//            MeasureSpec.UNSPECIFIED -> context.dpToPx(DEFAULT_SIZE).toInt()
+//            else -> MeasureSpec.getSize(spec)
+//        }
+//    }
+//
+//}
+
+
+//package ru.skillbranch.devintensive.ui.custom
+//
+//import android.content.Context
+//import android.graphics.*
+//import android.util.AttributeSet
+//import androidx.annotation.ColorInt
+//import androidx.annotation.Px
+//import androidx.appcompat.widget.AppCompatImageView
+//import androidx.core.graphics.drawable.toBitmap
+//import ru.skillbranch.devintensive.R
+//
+//class AvatarImageViewShader @JvmOverloads constructor(
+//    context: Context,
+//    attrs: AttributeSet? = null,
+//    defStyleAttr: Int = 0
+//) : AppCompatImageView(context, attrs, defStyleAttr) {
+//
+//    companion object {
+//        private const val DEFAULT_BORDER_WIDTH = 2
+//        private const val DEFAULT_BORDER_BORDER_COLOR = Color.WHITE // R.attr.colorAccent
+//        private const val DEFAULT_SIZE = 40
+//    }
+//
+//    @Px
+//    var borderWidth: Float = context.dpToPx(DEFAULT_BORDER_WIDTH)
+//    @ColorInt
+//    private var borderColor: Int = Color.WHITE
+//    private var initials: String = "??"
+//
+//    private val avatarPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+//    private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
+//    private val viewRect = Rect()
+//
+//    init {
+//        if (attrs != null) {
+//            val ta = context.obtainStyledAttributes(attrs, R.styleable.AvatarImageViewShader)
+//            borderWidth = ta.getDimension(R.styleable.AvatarImageViewShader_aivs_borderWidth, context.dpToPx(DEFAULT_BORDER_WIDTH))
+//            borderColor = ta.getColor(R.styleable.AvatarImageViewShader_aivs_borderColor, DEFAULT_BORDER_BORDER_COLOR)
+//            initials = ta.getString(R.styleable.AvatarImageViewShader_aivs_initials) ?: "??"
+//            ta.recycle()
+//        }
+//
+//        scaleType = ScaleType.CENTER_CROP
+//        setup()
+//    }
+//
+//    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+////        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+//
+//        val initSize = resolveDefaultSize(widthMeasureSpec)
+//        setMeasuredDimension(initSize, initSize)
+//    }
+//
+//    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+//        super.onSizeChanged(w, h, oldw, oldh)
+//
+//        if (w == 0) return
+//        with(viewRect) {
+//            left = 0
+//            top = 0
+//            right = w
+//            bottom = h
+//        }
+//        prepareShader(w, h)
+//    }
+//
+//    override fun onDraw(canvas: Canvas) {
+////        super.onDraw(canvas)
+//
+//        canvas.drawOval(RectF(viewRect), avatarPaint)
+//
+//        val half = (borderWidth / 2).toInt()
+//        viewRect.inset(half, half)
+//        canvas.drawOval(RectF(viewRect), borderPaint)
+//    }
+//
+//    private fun setup() {
+//        with(borderPaint) {
+//            style = Paint.Style.STROKE
+//            strokeWidth = borderWidth
+//            color = borderColor
+//        }
+//    }
+//
+//    private fun prepareShader(w: Int, h: Int) {
+//        val srcBm = drawable.toBitmap(w, h, Bitmap.Config.ARGB_8888)
+//        avatarPaint.shader = BitmapShader(srcBm, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
+//    }
+//
+//    private fun resolveDefaultSize(spec: Int): Int {
+//        return when (MeasureSpec.getMode(spec)) {
+//            MeasureSpec.UNSPECIFIED -> context.dpToPx(DEFAULT_SIZE).toInt()
+//            else -> MeasureSpec.getSize(spec)
+//        }
+//    }
+//}
