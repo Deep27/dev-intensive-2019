@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
+import android.util.Log
 import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
 import androidx.annotation.Px
@@ -21,15 +22,15 @@ class CircleImageView @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_BORDER_WIDTH = 2
-        private const val DEFAULT_BORDER_BORDER_COLOR = Color.WHITE // R.attr.colorAccent
+        private const val DEFAULT_BACKGROUND_COLOR = Color.BLACK
+        private const val DEFAULT_BORDER_COLOR = Color.WHITE
         private const val DEFAULT_SIZE = 40
     }
 
     @Px
-    var borderWidth: Float = context.dpToPx(DEFAULT_BORDER_WIDTH)
-
+    private var borderWidth: Float = context.dpToPx(DEFAULT_BORDER_WIDTH)
     @ColorInt
-    private var borderColor: Int = Color.WHITE
+    private var borderColor: Int = DEFAULT_BORDER_COLOR
     private var initials: String = "??"
 
     private val borderPaint = Paint(Paint.ANTI_ALIAS_FLAG)
@@ -49,7 +50,7 @@ class CircleImageView @JvmOverloads constructor(
             )
             borderColor = ta.getColor(
                 R.styleable.CircleImageView_cv_borderColor,
-                DEFAULT_BORDER_BORDER_COLOR
+                DEFAULT_BORDER_COLOR
             )
             initials = ta.getString(R.styleable.CircleImageView_cv_initials) ?: "??"
             ta.recycle()
@@ -61,7 +62,6 @@ class CircleImageView @JvmOverloads constructor(
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
 //        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
-
         val initSize = resolveDefaultSize(widthMeasureSpec)
         setMeasuredDimension(initSize, initSize)
     }
@@ -110,6 +110,7 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     override fun onSaveInstanceState(): Parcelable? {
+        Log.d("M_CircleImageView", "onSaveInstanceState")
         val savedState = SavedState(super.onSaveInstanceState())
         savedState.isAvatarMode = isAvatarMode
         savedState.borderWidth = borderWidth
@@ -118,7 +119,8 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     override fun onRestoreInstanceState(state: Parcelable?) {
-//        super.onRestoreInstanceState(state) // or here ?
+        Log.d("M_CircleImageView", "onRestoreInstanceState")
+        super.onRestoreInstanceState(state)
         if (state is SavedState) {
             state.also { // ??
                 isAvatarMode = state.isAvatarMode
@@ -130,8 +132,6 @@ class CircleImageView @JvmOverloads constructor(
                 color = borderColor
                 strokeWidth = borderWidth
             }
-        } else {
-            super.onRestoreInstanceState(state)
         }
     }
 
@@ -151,6 +151,9 @@ class CircleImageView @JvmOverloads constructor(
         borderPaint.strokeWidth = borderWidth
         invalidate()
     }
+
+    fun getBorderWidth() = borderWidth
+    fun getBorderColor() = borderColor
 
     private fun setup() {
         with(borderPaint) {
@@ -178,7 +181,7 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     private fun drawInitials(canvas: Canvas) {
-//        initialsPaint.color = Color.WHITE
+        initialsPaint.color = R.attr.colorAccent
         canvas.drawOval(RectF(viewRect), initialsPaint)
         with(initialsPaint) {
             color = Color.WHITE

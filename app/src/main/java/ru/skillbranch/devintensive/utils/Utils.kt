@@ -18,19 +18,10 @@ object Utils {
         return firstName to lastName
     }
 
-    fun toInitials(firstName: String?, lastName: String?): String? {
+    fun toInitials(firstName: String?, lastName: String?): String {
         val firstChar = firstName?.extractFirstUpperChar()
         val secondChar = lastName?.extractFirstUpperChar()
-        if (firstChar == null && secondChar == null) {
-            return null
-        }
-        if (firstChar == null) {
-            return secondChar
-        }
-        if (secondChar == null) {
-            return firstChar
-        }
-        return firstChar + secondChar
+        return listOfNotNull(firstChar, secondChar).joinToString("")
     }
 
     fun transliteration(payload: String, divider: String = " "): String {

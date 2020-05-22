@@ -188,6 +188,6 @@ class ProfileActivity : AppCompatActivity() {
         val firstName = viewModel.getProfileData().getValue()?.firstName
         val lastName = viewModel.getProfileData().getValue()?.lastName
         val initials = Utils.toInitials(firstName, lastName)
-//        iv_avatar.setText(initials)
+        iv_avatar.setInitials(initials)
     }
 }
