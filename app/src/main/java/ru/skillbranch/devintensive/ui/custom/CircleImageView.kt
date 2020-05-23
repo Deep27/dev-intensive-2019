@@ -7,6 +7,7 @@ import android.os.Parcel
 import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
+import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.annotation.Dimension
 import androidx.annotation.Px
@@ -22,7 +23,6 @@ class CircleImageView @JvmOverloads constructor(
 
     companion object {
         private const val DEFAULT_BORDER_WIDTH = 2
-        private const val DEFAULT_BACKGROUND_COLOR = Color.BLACK
         private const val DEFAULT_BORDER_COLOR = Color.WHITE
         private const val DEFAULT_SIZE = 40
     }
@@ -55,7 +55,6 @@ class CircleImageView @JvmOverloads constructor(
             initials = ta.getString(R.styleable.CircleImageView_cv_initials) ?: "??"
             ta.recycle()
         }
-
         scaleType = ScaleType.CENTER_CROP
         setup()
     }
@@ -181,7 +180,7 @@ class CircleImageView @JvmOverloads constructor(
     }
 
     private fun drawInitials(canvas: Canvas) {
-        initialsPaint.color = R.attr.colorAccent
+        initialsPaint.color = getAccentColor()
         canvas.drawOval(RectF(viewRect), initialsPaint)
         with(initialsPaint) {
             color = Color.WHITE
@@ -196,6 +195,13 @@ class CircleImageView @JvmOverloads constructor(
             viewRect.exactCenterY() - offsetY,
             initialsPaint
         )
+    }
+
+    @ColorInt
+    private fun getAccentColor(): Int {
+        val accentColor = TypedValue()
+        context.theme.resolveAttribute(android.R.attr.colorAccent, accentColor, true)
+        return accentColor.data
     }
 
     private class SavedState : BaseSavedState, Parcelable {
